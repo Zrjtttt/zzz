@@ -1,0 +1,2 @@
+class NormLoader:
+    pass

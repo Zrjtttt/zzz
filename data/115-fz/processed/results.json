@@ -1,0 +1,974 @@
+{
+  "method": "question_frame",
+  "metrics": {
+    "recall@1": 0.85,
+    "recall@3": 0.95,
+    "recall@5": 1.0,
+    "recall@10": 1.0,
+    "top1_accuracy": 0.85,
+    "mrr": 0.9041666666666666,
+    "avg_rank": 1.3
+  },
+  "per_question": [
+    {
+      "id": "q001",
+      "type": "subject",
+      "rank": 1,
+      "found": true,
+      "retrieved_norms": [
+        "1",
+        "7",
+        "6",
+        "5",
+        "6.1"
+      ],
+      "frame": {
+        "original_text": "Кто обязан располагать информацией о своих бенефициарных владельцах?",
+        "intent": "subject",
+        "subject": "информация",
+        "action": "располагать информацией",
+        "legal_effect": "obligation",
+        "object": "информация",
+        "temporal": false,
+        "exception": false,
+        "definition": false,
+        "negation": false,
+        "multi_hop": false,
+        "confidence": {
+          "intent": "high"
+        },
+        "gold_type": "subject"
+      },
+      "matches": [
+        [
+          "legal_effect:obligation"
+        ],
+        [
+          "subject:информация"
+        ],
+        [
+          "legal_effect:obligation"
+        ],
+        [
+          "legal_effect:obligation"
+        ],
+        []
+      ]
+    },
+    {
+      "id": "q002",
+      "type": "subject",
+      "rank": 1,
+      "found": true,
+      "retrieved_norms": [
+        "5",
+        "6",
+        "4",
+        "1",
+        "3"
+      ],
+      "frame": {
+        "original_text": "Кто обязан представлять информацию юридическому лицу для установления бенефициарных владельцев?",
+        "intent": "subject",
+        "subject": "юридическое лицо",
+        "action": "представлять информацию",
+        "legal_effect": "obligation",
+        "object": "бенефициарные владельцы",
+        "temporal": false,
+        "exception": false,
+        "definition": false,
+        "negation": false,
+        "multi_hop": false,
+        "confidence": {
+          "intent": "high"
+        },
+        "gold_type": "subject"
+      },
+      "matches": [
+        [
+          "legal_effect:obligation"
+        ],
+        [
+          "subject:юридическое лицо",
+          "legal_effect:obligation"
+        ],
+        [
+          "subject:юридическое лицо"
+        ],
+        [
+          "subject:юридическое лицо",
+          "legal_effect:obligation"
+        ],
+        [
+          "subject:юридическое лицо",
+          "legal_effect:obligation"
+        ]
+      ]
+    },
+    {
+      "id": "q003",
+      "type": "subject",
+      "rank": 1,
+      "found": true,
+      "retrieved_norms": [
+        "8",
+        "5",
+        "4",
+        "2",
+        "7.1"
+      ],
+      "frame": {
+        "original_text": "Кто признаётся бенефициарным владельцем для целей статьи 6.1?",
+        "intent": "subject",
+        "subject": "бенефициарный владелец",
+        "action": null,
+        "legal_effect": null,
+        "object": null,
+        "temporal": false,
+        "exception": false,
+        "definition": false,
+        "negation": false,
+        "multi_hop": false,
+        "confidence": {
+          "intent": "high"
+        },
+        "gold_type": "subject"
+      },
+      "matches": [
+        [],
+        [],
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "id": "q004",
+      "type": "subject",
+      "rank": 1,
+      "found": true,
+      "retrieved_norms": [
+        "2",
+        "6.1",
+        "6",
+        "5",
+        "1"
+      ],
+      "frame": {
+        "original_text": "На кого не распространяется обязанность по раскрытию информации о бенефициарных владельцах?",
+        "intent": "exception",
+        "subject": "информация",
+        "action": "распространяются",
+        "legal_effect": "obligation",
+        "object": "информация",
+        "temporal": false,
+        "exception": true,
+        "definition": false,
+        "negation": true,
+        "multi_hop": false,
+        "confidence": {
+          "intent": "high"
+        },
+        "gold_type": "subject"
+      },
+      "matches": [
+        [
+          "exception",
+          "legal_effect:obligation",
+          "exception_boost"
+        ],
+        [],
+        [
+          "legal_effect:obligation"
+        ],
+        [
+          "legal_effect:obligation"
+        ],
+        [
+          "legal_effect:obligation"
+        ]
+      ]
+    },
+    {
+      "id": "q005",
+      "type": "action",
+      "rank": 1,
+      "found": true,
+      "retrieved_norms": [
+        "1",
+        "6",
+        "3",
+        "5",
+        "6.1"
+      ],
+      "frame": {
+        "original_text": "Что обязано делать юридическое лицо в отношении информации о бенефициарных владельцах?",
+        "intent": "action",
+        "subject": "юридическое лицо",
+        "action": null,
+        "legal_effect": "obligation",
+        "object": "информация",
+        "temporal": false,
+        "exception": false,
+        "definition": false,
+        "negation": false,
+        "multi_hop": false,
+        "confidence": {
+          "intent": "high"
+        },
+        "gold_type": "action"
+      },
+      "matches": [
+        [
+          "legal_effect:obligation"
+        ],
+        [
+          "legal_effect:obligation"
+        ],
+        [
+          "legal_effect:obligation"
+        ],
+        [
+          "legal_effect:obligation"
+        ],
+        []
+      ]
+    },
+    {
+      "id": "q006",
+      "type": "action",
+      "rank": 3,
+      "found": true,
+      "retrieved_norms": [
+        "1",
+        "6",
+        "3.1",
+        "5",
+        "3"
+      ],
+      "frame": {
+        "original_text": "Что обязано делать юридическое лицо при изменении сведений о бенефициарных владельцах?",
+        "intent": "action",
+        "subject": "юридическое лицо",
+        "action": null,
+        "legal_effect": "obligation",
+        "object": "сведения",
+        "temporal": false,
+        "exception": false,
+        "definition": false,
+        "negation": false,
+        "multi_hop": false,
+        "confidence": {
+          "intent": "high"
+        },
+        "gold_type": "action"
+      },
+      "matches": [
+        [
+          "legal_effect:obligation"
+        ],
+        [
+          "legal_effect:obligation"
+        ],
+        [],
+        [
+          "legal_effect:obligation"
+        ],
+        [
+          "legal_effect:obligation"
+        ]
+      ]
+    },
+    {
+      "id": "q007",
+      "type": "action",
+      "rank": 1,
+      "found": true,
+      "retrieved_norms": [
+        "4",
+        "3",
+        "1",
+        "5",
+        "6"
+      ],
+      "frame": {
+        "original_text": "Что вправе запрашивать юридическое лицо у учредителей и участников?",
+        "intent": "action",
+        "subject": "юридическое лицо",
+        "action": null,
+        "legal_effect": "right",
+        "object": null,
+        "temporal": false,
+        "exception": false,
+        "definition": false,
+        "negation": false,
+        "multi_hop": false,
+        "confidence": {
+          "intent": "low"
+        },
+        "gold_type": "action"
+      },
+      "matches": [
+        [
+          "legal_effect:right"
+        ],
+        [],
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "id": "q008",
+      "type": "action",
+      "rank": 1,
+      "found": true,
+      "retrieved_norms": [
+        "5",
+        "1",
+        "6",
+        "3.2",
+        "2"
+      ],
+      "frame": {
+        "original_text": "Что обязаны делать учредители и участники в отношении юридического лица?",
+        "intent": "action",
+        "subject": "юридическое лицо",
+        "action": null,
+        "legal_effect": "obligation",
+        "object": null,
+        "temporal": false,
+        "exception": false,
+        "definition": false,
+        "negation": false,
+        "multi_hop": false,
+        "confidence": {
+          "intent": "high"
+        },
+        "gold_type": "action"
+      },
+      "matches": [
+        [
+          "legal_effect:obligation"
+        ],
+        [
+          "legal_effect:obligation"
+        ],
+        [
+          "legal_effect:obligation"
+        ],
+        [],
+        [
+          "legal_effect:obligation"
+        ]
+      ]
+    },
+    {
+      "id": "q009",
+      "type": "deadline",
+      "rank": 1,
+      "found": true,
+      "retrieved_norms": [
+        "3.1",
+        "3.2",
+        "6",
+        "1",
+        "3"
+      ],
+      "frame": {
+        "original_text": "Как часто юридическое лицо должно обновлять информацию о бенефициарных владельцах?",
+        "intent": "deadline",
+        "subject": "юридическое лицо",
+        "action": "обновлять информацию",
+        "legal_effect": null,
+        "object": "информация",
+        "temporal": false,
+        "exception": false,
+        "definition": false,
+        "negation": false,
+        "multi_hop": false,
+        "confidence": {
+          "intent": "high"
+        },
+        "gold_type": "deadline"
+      },
+      "matches": [
+        [
+          "temporal:{'deadline': 'не реже одного раза в год'}",
+          "temporal_boost"
+        ],
+        [
+          "temporal:{'deadline': 'не менее пяти лет'}",
+          "temporal_boost"
+        ],
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "id": "q010",
+      "type": "deadline",
+      "rank": 1,
+      "found": true,
+      "retrieved_norms": [
+        "3.2",
+        "3.1",
+        "6",
+        "6.1",
+        "7"
+      ],
+      "frame": {
+        "original_text": "Сколько лет нужно хранить информацию о бенефициарных владельцах?",
+        "intent": "deadline",
+        "subject": "информация",
+        "action": "хранить информацию",
+        "legal_effect": null,
+        "object": "информация",
+        "temporal": true,
+        "exception": false,
+        "definition": false,
+        "negation": false,
+        "multi_hop": false,
+        "confidence": {
+          "intent": "high"
+        },
+        "gold_type": "deadline"
+      },
+      "matches": [
+        [
+          "temporal:{'deadline': 'не менее пяти лет'}",
+          "temporal_boost"
+        ],
+        [
+          "temporal:{'deadline': 'не реже одного раза в год'}",
+          "temporal_boost"
+        ],
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "id": "q011",
+      "type": "exception",
+      "rank": 1,
+      "found": true,
+      "retrieved_norms": [
+        "2",
+        "6.1",
+        "6",
+        "5",
+        "1"
+      ],
+      "frame": {
+        "original_text": "На какие лица не распространяется обязанность по раскрытию информации о бенефициарных владельцах?",
+        "intent": "exception",
+        "subject": "информация",
+        "action": "распространяются",
+        "legal_effect": "obligation",
+        "object": "информация",
+        "temporal": false,
+        "exception": true,
+        "definition": false,
+        "negation": true,
+        "multi_hop": true,
+        "confidence": {
+          "intent": "high"
+        },
+        "gold_type": "exception"
+      },
+      "matches": [
+        [
+          "exception",
+          "legal_effect:obligation",
+          "exception_boost"
+        ],
+        [],
+        [
+          "legal_effect:obligation"
+        ],
+        [
+          "legal_effect:obligation"
+        ],
+        [
+          "legal_effect:obligation"
+        ]
+      ]
+    },
+    {
+      "id": "q012",
+      "type": "exception",
+      "rank": 2,
+      "found": true,
+      "retrieved_norms": [
+        "6.1",
+        "2",
+        "6",
+        "1",
+        "3"
+      ],
+      "frame": {
+        "original_text": "Освобождается ли юридическое лицо от обязанности по раскрытию информации в каких-либо случаях?",
+        "intent": "exception",
+        "subject": "юридическое лицо",
+        "action": null,
+        "legal_effect": "obligation",
+        "object": "информация",
+        "temporal": false,
+        "exception": false,
+        "definition": false,
+        "negation": false,
+        "multi_hop": false,
+        "confidence": {
+          "intent": "high"
+        },
+        "gold_type": "exception"
+      },
+      "matches": [
+        [],
+        [
+          "exception",
+          "legal_effect:obligation",
+          "exception_boost"
+        ],
+        [
+          "legal_effect:obligation"
+        ],
+        [
+          "legal_effect:obligation"
+        ],
+        [
+          "legal_effect:obligation"
+        ]
+      ]
+    },
+    {
+      "id": "q013",
+      "type": "definition",
+      "rank": 1,
+      "found": true,
+      "retrieved_norms": [
+        "8",
+        "5",
+        "4",
+        "2",
+        "7.1"
+      ],
+      "frame": {
+        "original_text": "Кто считается бенефициарным владельцем для целей статьи 6.1?",
+        "intent": "definition",
+        "subject": "бенефициарный владелец",
+        "action": null,
+        "legal_effect": "definition",
+        "object": null,
+        "temporal": false,
+        "exception": false,
+        "definition": true,
+        "negation": false,
+        "multi_hop": false,
+        "confidence": {
+          "intent": "high"
+        },
+        "gold_type": "definition"
+      },
+      "matches": [
+        [
+          "definition",
+          "legal_effect:definition",
+          "definition_boost"
+        ],
+        [],
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "id": "q014",
+      "type": "definition",
+      "rank": 1,
+      "found": true,
+      "retrieved_norms": [
+        "8",
+        "7",
+        "3.1",
+        "1",
+        "6"
+      ],
+      "frame": {
+        "original_text": "Что означает термин 'бенефициарный владелец' в статье 6.1?",
+        "intent": "definition",
+        "subject": "бенефициарный владелец",
+        "action": null,
+        "legal_effect": null,
+        "object": null,
+        "temporal": false,
+        "exception": false,
+        "definition": true,
+        "negation": false,
+        "multi_hop": false,
+        "confidence": {
+          "intent": "high"
+        },
+        "gold_type": "definition"
+      },
+      "matches": [
+        [
+          "definition",
+          "definition_boost"
+        ],
+        [],
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "id": "q015",
+      "type": "recipient",
+      "rank": 1,
+      "found": true,
+      "retrieved_norms": [
+        "6",
+        "1",
+        "4",
+        "3",
+        "3.1"
+      ],
+      "frame": {
+        "original_text": "Перед какими органами юридическое лицо обязано раскрывать информацию о бенефициарных владельцах?",
+        "intent": "recipient",
+        "subject": "юридическое лицо",
+        "action": null,
+        "legal_effect": "obligation",
+        "object": "информация",
+        "temporal": false,
+        "exception": false,
+        "definition": false,
+        "negation": false,
+        "multi_hop": false,
+        "confidence": {
+          "intent": "high"
+        },
+        "gold_type": "recipient"
+      },
+      "matches": [
+        [
+          "object:информация",
+          "subject:юридическое лицо",
+          "legal_effect:obligation"
+        ],
+        [
+          "subject:юридическое лицо",
+          "legal_effect:obligation"
+        ],
+        [
+          "object:информация",
+          "subject:юридическое лицо"
+        ],
+        [
+          "subject:юридическое лицо",
+          "legal_effect:obligation"
+        ],
+        [
+          "object:информация"
+        ]
+      ]
+    },
+    {
+      "id": "q016",
+      "type": "extension",
+      "rank": 1,
+      "found": true,
+      "retrieved_norms": [
+        "7.1",
+        "2",
+        "5",
+        "8",
+        "1"
+      ],
+      "frame": {
+        "original_text": "Распространяются ли положения статьи 6.1 на иностранные юридические лица?",
+        "intent": "extension",
+        "subject": null,
+        "action": "распространяются",
+        "legal_effect": "extension",
+        "object": null,
+        "temporal": false,
+        "exception": false,
+        "definition": false,
+        "negation": false,
+        "multi_hop": false,
+        "confidence": {
+          "intent": "high"
+        },
+        "gold_type": "extension"
+      },
+      "matches": [
+        [
+          "legal_effect:extension"
+        ],
+        [],
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "id": "q017",
+      "type": "multi_hop",
+      "rank": 1,
+      "found": true,
+      "retrieved_norms": [
+        "3.1",
+        "3.2",
+        "1",
+        "5",
+        "3"
+      ],
+      "frame": {
+        "original_text": "Что должно сделать юридическое лицо при изменении сведений и в какой срок?",
+        "intent": "multi_hop",
+        "subject": "юридическое лицо",
+        "action": null,
+        "legal_effect": null,
+        "object": "сведения",
+        "temporal": true,
+        "exception": false,
+        "definition": false,
+        "negation": false,
+        "multi_hop": true,
+        "confidence": {
+          "intent": "high"
+        },
+        "gold_type": "multi_hop"
+      },
+      "matches": [
+        [
+          "temporal:{'deadline': 'не реже одного раза в год'}",
+          "temporal_boost"
+        ],
+        [
+          "temporal:{'deadline': 'не менее пяти лет'}",
+          "temporal_boost"
+        ],
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "id": "q018",
+      "type": "multi_hop",
+      "rank": 4,
+      "found": true,
+      "retrieved_norms": [
+        "3.1",
+        "1",
+        "3.2",
+        "6",
+        "3"
+      ],
+      "frame": {
+        "original_text": "Какие органы могут запросить информацию и что обязано сделать юридическое лицо?",
+        "intent": "multi_hop",
+        "subject": "юридическое лицо",
+        "action": null,
+        "legal_effect": "obligation",
+        "object": "информация",
+        "temporal": false,
+        "exception": false,
+        "definition": false,
+        "negation": false,
+        "multi_hop": true,
+        "confidence": {
+          "intent": "high"
+        },
+        "gold_type": "multi_hop"
+      },
+      "matches": [
+        [
+          "temporal:{'deadline': 'не реже одного раза в год'}",
+          "temporal_boost"
+        ],
+        [
+          "legal_effect:obligation"
+        ],
+        [
+          "temporal:{'deadline': 'не менее пяти лет'}",
+          "temporal_boost"
+        ],
+        [
+          "legal_effect:obligation"
+        ],
+        [
+          "legal_effect:obligation"
+        ]
+      ]
+    },
+    {
+      "id": "q019",
+      "type": "negative",
+      "rank": 1,
+      "found": true,
+      "retrieved_norms": [
+        "5",
+        "6.1",
+        "6",
+        "3.2",
+        "7"
+      ],
+      "frame": {
+        "original_text": "Является ли передача информации о бенефициарных владельцах нарушением закона о персональных данных?",
+        "intent": "negative",
+        "subject": "информация",
+        "action": null,
+        "legal_effect": null,
+        "object": "информация",
+        "temporal": false,
+        "exception": false,
+        "definition": false,
+        "negation": false,
+        "multi_hop": false,
+        "confidence": {
+          "intent": "high"
+        },
+        "gold_type": "negative"
+      },
+      "matches": [
+        [
+          "negation",
+          "negation_boost"
+        ],
+        [
+          "negation",
+          "negation_boost"
+        ],
+        [
+          "negation",
+          "negation_boost"
+        ],
+        [
+          "negation",
+          "negation_boost"
+        ],
+        [
+          "negation",
+          "negation_boost"
+        ]
+      ]
+    },
+    {
+      "id": "q020",
+      "type": "negative",
+      "rank": 1,
+      "found": true,
+      "retrieved_norms": [
+        "5",
+        "6",
+        "3.1",
+        "1",
+        "3.2"
+      ],
+      "frame": {
+        "original_text": "Обязаны ли учредители и участники предоставлять информацию о бенефициарных владельцах?",
+        "intent": "negative",
+        "subject": "учредители и участники",
+        "action": null,
+        "legal_effect": "obligation",
+        "object": "информация",
+        "temporal": false,
+        "exception": false,
+        "definition": false,
+        "negation": false,
+        "multi_hop": false,
+        "confidence": {
+          "intent": "high"
+        },
+        "gold_type": "negative"
+      },
+      "matches": [
+        [
+          "negation",
+          "legal_effect:obligation",
+          "negation_boost"
+        ],
+        [
+          "negation",
+          "legal_effect:obligation",
+          "negation_boost"
+        ],
+        [
+          "negation",
+          "negation_boost"
+        ],
+        [
+          "negation",
+          "legal_effect:obligation",
+          "negation_boost"
+        ],
+        [
+          "negation",
+          "negation_boost"
+        ]
+      ]
+    }
+  ],
+  "type_metrics": {
+    "subject": {
+      "total": 4,
+      "found": 4,
+      "top1": 4,
+      "avg_rank": 1.0
+    },
+    "action": {
+      "total": 4,
+      "found": 4,
+      "top1": 3,
+      "avg_rank": 1.5
+    },
+    "deadline": {
+      "total": 2,
+      "found": 2,
+      "top1": 2,
+      "avg_rank": 1.0
+    },
+    "exception": {
+      "total": 2,
+      "found": 2,
+      "top1": 1,
+      "avg_rank": 1.5
+    },
+    "definition": {
+      "total": 2,
+      "found": 2,
+      "top1": 2,
+      "avg_rank": 1.0
+    },
+    "recipient": {
+      "total": 1,
+      "found": 1,
+      "top1": 1,
+      "avg_rank": 1.0
+    },
+    "extension": {
+      "total": 1,
+      "found": 1,
+      "top1": 1,
+      "avg_rank": 1.0
+    },
+    "multi_hop": {
+      "total": 2,
+      "found": 2,
+      "top1": 1,
+      "avg_rank": 2.5
+    },
+    "negative": {
+      "total": 2,
+      "found": 2,
+      "top1": 2,
+      "avg_rank": 1.0
+    }
+  }
+}

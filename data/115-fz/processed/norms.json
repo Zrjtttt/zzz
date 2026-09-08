@@ -1,0 +1,531 @@
+{
+  "source_file": "/content/article_6_1.txt",
+  "total_norms": 12,
+  "norms": {
+    "6.1": {
+      "norm_id": "6.1",
+      "original_text": "6.1. Обязанности юридического лица по раскрытию информации о своих бенефициарных владельцах",
+      "norm_type": "other",
+      "legal": {
+        "subject": null,
+        "legal_effect": null,
+        "action": null,
+        "object": [
+          "бенефициарные владельцы",
+          "информация"
+        ]
+      },
+      "temporal": null,
+      "logic": {
+        "exception": null,
+        "negation": true
+      },
+      "relations": {
+        "references": null
+      },
+      "definition": null,
+      "metadata": {
+        "length": 91,
+        "has_exception": false,
+        "has_temporal": false,
+        "has_definition": false,
+        "has_references": false
+      }
+    },
+    "1": {
+      "norm_id": "1",
+      "original_text": "1. Юридическое лицо обязано располагать информацией о своих бенефициарных владельцах и принимать обоснованные и доступные в сложившихся обстоятельствах меры по установлению в отношении своих бенефициарных владельцев сведений, предусмотренных абзацем вторым подпункта 1 пункта 1 статьи 7 настоящего Федерального закона.",
+      "norm_type": "obligation",
+      "legal": {
+        "subject": "юридическое лицо",
+        "legal_effect": [
+          "obligation"
+        ],
+        "action": [
+          "располагать информацией",
+          "принимать меры"
+        ],
+        "object": [
+          "бенефициарные владельцы",
+          "сведения",
+          "меры по установлению"
+        ]
+      },
+      "temporal": null,
+      "logic": {
+        "exception": null,
+        "negation": true
+      },
+      "relations": {
+        "references": [
+          "статья 7",
+          "пункт 1",
+          "пункт 1",
+          "подпункт 1"
+        ]
+      },
+      "definition": null,
+      "metadata": {
+        "length": 318,
+        "has_exception": false,
+        "has_temporal": false,
+        "has_definition": false,
+        "has_references": true
+      }
+    },
+    "2": {
+      "norm_id": "2",
+      "original_text": "2. Предусмотренная пунктом 1 настоящей статьи обязанность не распространяется на лиц, указанных в абзацах втором - шестом подпункта 2 пункта 1 статьи 7 настоящего Федерального закона.",
+      "norm_type": "exception",
+      "legal": {
+        "subject": null,
+        "legal_effect": [
+          "obligation",
+          "exception"
+        ],
+        "action": null,
+        "object": null
+      },
+      "temporal": null,
+      "logic": {
+        "exception": {
+          "type": "exception",
+          "target": "лиц"
+        },
+        "negation": true
+      },
+      "relations": {
+        "references": [
+          "статья 7",
+          "пункт 2",
+          "пункт 1",
+          "подпункт 2"
+        ]
+      },
+      "definition": null,
+      "metadata": {
+        "length": 183,
+        "has_exception": true,
+        "has_temporal": false,
+        "has_definition": false,
+        "has_references": true
+      }
+    },
+    "3": {
+      "norm_id": "3",
+      "original_text": "3. Юридическое лицо обязано:",
+      "norm_type": "obligation",
+      "legal": {
+        "subject": "юридическое лицо",
+        "legal_effect": [
+          "obligation"
+        ],
+        "action": null,
+        "object": null
+      },
+      "temporal": null,
+      "logic": {
+        "exception": null,
+        "negation": false
+      },
+      "relations": {
+        "references": null
+      },
+      "definition": null,
+      "metadata": {
+        "length": 28,
+        "has_exception": false,
+        "has_temporal": false,
+        "has_definition": false,
+        "has_references": false
+      }
+    },
+    "3.1": {
+      "norm_id": "3.1",
+      "original_text": "1) регулярно, но не реже одного раза в год либо в случае изменения сведений обновлять информацию о своих бенефициарных владельцах и документально фиксировать полученную информацию;",
+      "norm_type": "other",
+      "legal": {
+        "subject": null,
+        "legal_effect": null,
+        "action": [
+          "обновлять информацию",
+          "документально фиксировать"
+        ],
+        "object": [
+          "бенефициарные владельцы",
+          "сведения",
+          "информация"
+        ]
+      },
+      "temporal": {
+        "deadline": "не реже одного раза в год"
+      },
+      "logic": {
+        "exception": null,
+        "negation": true
+      },
+      "relations": {
+        "references": null
+      },
+      "definition": null,
+      "metadata": {
+        "length": 180,
+        "has_exception": false,
+        "has_temporal": true,
+        "has_definition": false,
+        "has_references": false
+      }
+    },
+    "3.2": {
+      "norm_id": "3.2",
+      "original_text": "2) хранить информацию о своих бенефициарных владельцах и о принятых мерах по установлению в отношении своих бенефициарных владельцев сведений, предусмотренных абзацем вторым подпункта 1 пункта 1 статьи 7 настоящего Федерального закона, не менее пяти лет со дня получения такой информации.",
+      "norm_type": "other",
+      "legal": {
+        "subject": null,
+        "legal_effect": null,
+        "action": [
+          "хранить информацию"
+        ],
+        "object": [
+          "бенефициарные владельцы",
+          "сведения",
+          "информация"
+        ]
+      },
+      "temporal": {
+        "deadline": "не менее пяти лет"
+      },
+      "logic": {
+        "exception": null,
+        "negation": true
+      },
+      "relations": {
+        "references": [
+          "статья 7",
+          "пункт 1",
+          "пункт 1",
+          "подпункт 1"
+        ]
+      },
+      "definition": null,
+      "metadata": {
+        "length": 288,
+        "has_exception": false,
+        "has_temporal": true,
+        "has_definition": false,
+        "has_references": true
+      }
+    },
+    "4": {
+      "norm_id": "4",
+      "original_text": "4. Юридическое лицо вправе запрашивать у физических и юридических лиц, являющихся учредителями или участниками данного юридического лица или иным образом контролирующих его, информацию, необходимую для установления своих бенефициарных владельцев и обновления полученных сведений.",
+      "norm_type": "right",
+      "legal": {
+        "subject": "юридическое лицо",
+        "legal_effect": [
+          "right"
+        ],
+        "action": [
+          "запрашивать информацию"
+        ],
+        "object": [
+          "бенефициарные владельцы",
+          "сведения",
+          "информация"
+        ]
+      },
+      "temporal": null,
+      "logic": {
+        "exception": null,
+        "negation": true
+      },
+      "relations": {
+        "references": null
+      },
+      "definition": null,
+      "metadata": {
+        "length": 279,
+        "has_exception": false,
+        "has_temporal": false,
+        "has_definition": false,
+        "has_references": false
+      }
+    },
+    "5": {
+      "norm_id": "5",
+      "original_text": "5. Физические и юридические лица, являющиеся учредителями или участниками юридического лица или иным образом контролирующие его, обязаны представлять данному юридическому лицу имеющуюся у них информацию, необходимую для установления его бенефициарных владельцев, а также сведения об изменении такой информации. Передача такой информации (сведений) в соответствии с положениями настоящей статьи не является нарушением законодательства Российской Федерации о персональных данных.",
+      "norm_type": "obligation",
+      "legal": {
+        "subject": "учредители и участники",
+        "legal_effect": [
+          "obligation"
+        ],
+        "action": [
+          "представлять информацию"
+        ],
+        "object": [
+          "бенефициарные владельцы",
+          "сведения",
+          "информация"
+        ]
+      },
+      "temporal": null,
+      "logic": {
+        "exception": null,
+        "negation": true
+      },
+      "relations": {
+        "references": null
+      },
+      "definition": null,
+      "metadata": {
+        "length": 477,
+        "has_exception": false,
+        "has_temporal": false,
+        "has_definition": false,
+        "has_references": false
+      }
+    },
+    "6": {
+      "norm_id": "6",
+      "original_text": "6. Юридическое лицо обязано представлять имеющуюся документально подтвержденную информацию о своих бенефициарных владельцах либо о принятых мерах по установлению в отношении своих бенефициарных владельцев сведений, предусмотренных абзацем вторым подпункта 1 пункта 1 статьи 7 настоящего Федерального закона, по запросу уполномоченного органа, налоговых органов или федерального органа исполнительной власти, уполномоченного в сфере регистрации некоммерческих организаций. Порядок и сроки представления информации о бенефициарных владельцах юридического лица и о принятых мерах по установлению в отношении таких бенефициарных владельцев сведений, предусмотренных абзацем вторым подпункта 1 пункта 1 статьи 7 настоящего Федерального закона, определяются Правительством Российской Федерации.",
+      "norm_type": "obligation",
+      "legal": {
+        "subject": "юридическое лицо",
+        "legal_effect": [
+          "obligation"
+        ],
+        "action": [
+          "представлять информацию"
+        ],
+        "object": [
+          "бенефициарные владельцы",
+          "сведения",
+          "информация"
+        ]
+      },
+      "temporal": null,
+      "logic": {
+        "exception": null,
+        "negation": true
+      },
+      "relations": {
+        "references": [
+          "статья 7",
+          "статья 7",
+          "пункт 1",
+          "пункт 1",
+          "пункт 1",
+          "пункт 1",
+          "подпункт 1",
+          "подпункт 1"
+        ]
+      },
+      "definition": null,
+      "metadata": {
+        "length": 788,
+        "has_exception": false,
+        "has_temporal": false,
+        "has_definition": false,
+        "has_references": true
+      }
+    },
+    "7": {
+      "norm_id": "7",
+      "original_text": "7. Информация о бенефициарных владельцах юридического лица раскрывается в его отчетности в случаях и порядке, которые предусмотрены законодательством Российской Федерации.",
+      "norm_type": "disclosure",
+      "legal": {
+        "subject": "информация",
+        "legal_effect": [
+          "disclosure"
+        ],
+        "action": [
+          "раскрывается"
+        ],
+        "object": [
+          "бенефициарные владельцы"
+        ]
+      },
+      "temporal": null,
+      "logic": {
+        "exception": null,
+        "negation": true
+      },
+      "relations": {
+        "references": null
+      },
+      "definition": null,
+      "metadata": {
+        "length": 171,
+        "has_exception": false,
+        "has_temporal": false,
+        "has_definition": false,
+        "has_references": false
+      }
+    },
+    "7.1": {
+      "norm_id": "7.1",
+      "original_text": "7.1. Положения пунктов 1 - 7 настоящей статьи распространяются на иностранные юридические лица и иностранные структуры без образования юридического лица, осуществляющие свою деятельность на территории Российской Федерации.",
+      "norm_type": "extension",
+      "legal": {
+        "subject": "положения пунктов 1-7",
+        "legal_effect": [
+          "extension"
+        ],
+        "action": [
+          "распространяются"
+        ],
+        "object": null
+      },
+      "temporal": null,
+      "logic": {
+        "exception": null,
+        "negation": false
+      },
+      "relations": {
+        "references": null
+      },
+      "definition": null,
+      "metadata": {
+        "length": 222,
+        "has_exception": false,
+        "has_temporal": false,
+        "has_definition": false,
+        "has_references": false
+      }
+    },
+    "8": {
+      "norm_id": "8",
+      "original_text": "8. Для целей настоящей статьи под бенефициарным владельцем понимается физическое лицо, которое в конечном счете прямо или косвенно (через третьих лиц) владеет (имеет преобладающее участие более 25 процентов в капитале) юридическим лицом либо имеет возможность контролировать его действия.",
+      "norm_type": "definition",
+      "legal": {
+        "subject": "бенефициарный владелец (определение)",
+        "legal_effect": [
+          "definition"
+        ],
+        "action": null,
+        "object": null
+      },
+      "temporal": null,
+      "logic": {
+        "exception": null,
+        "negation": true
+      },
+      "relations": {
+        "references": null
+      },
+      "definition": {
+        "term": "бенефициарным владельцем",
+        "definition": "физическое лицо"
+      },
+      "metadata": {
+        "length": 288,
+        "has_exception": false,
+        "has_temporal": false,
+        "has_definition": true,
+        "has_references": false
+      }
+    }
+  },
+  "statistics": {
+    "total": 12,
+    "with_subject": 8,
+    "with_effect": 9,
+    "with_action": 8,
+    "with_object": 8,
+    "with_temporal": 2,
+    "with_exception": 1,
+    "with_references": 4,
+    "with_definition": 1
+  },
+  "norm_types": {
+    "other": [
+      "6.1",
+      "3.1",
+      "3.2"
+    ],
+    "obligation": [
+      "1",
+      "3",
+      "5",
+      "6"
+    ],
+    "exception": [
+      "2"
+    ],
+    "right": [
+      "4"
+    ],
+    "disclosure": [
+      "7"
+    ],
+    "extension": [
+      "7.1"
+    ],
+    "definition": [
+      "8"
+    ]
+  },
+  "norm_positions": {
+    "6.1": {
+      "start": 7,
+      "end": 150,
+      "length": 91
+    },
+    "1": {
+      "start": 150,
+      "end": 469,
+      "length": 318
+    },
+    "2": {
+      "start": 469,
+      "end": 705,
+      "length": 183
+    },
+    "3": {
+      "start": 705,
+      "end": 733,
+      "length": 28
+    },
+    "3.1": {
+      "start": 733,
+      "end": 915,
+      "length": 180
+    },
+    "3.2": {
+      "start": 915,
+      "end": 1204,
+      "length": 288
+    },
+    "4": {
+      "start": 1256,
+      "end": 1588,
+      "length": 279
+    },
+    "5": {
+      "start": 1588,
+      "end": 2118,
+      "length": 477
+    },
+    "6": {
+      "start": 2118,
+      "end": 2983,
+      "length": 788
+    },
+    "7": {
+      "start": 2983,
+      "end": 3155,
+      "length": 171
+    },
+    "7.1": {
+      "start": 3155,
+      "end": 3430,
+      "length": 222
+    },
+    "8": {
+      "start": 3430,
+      "end": 3721,
+      "length": 288
+    }
+  }
+}
