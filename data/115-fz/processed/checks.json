@@ -1,0 +1,139 @@
+{
+  "check_001": {
+    "id": "check_001",
+    "question": "Как часто нужно обновлять информацию о бенефициарных владельцах?",
+    "norm_id": "3.1",
+    "norm_text": "регулярно, но не реже одного раза в год либо в случае изменения сведений обновлять информацию о своих бенефициарных владельцах и документально фиксировать полученную информацию",
+    "requirements": {
+      "R1": {
+        "description": "Обновлять информацию о бенефициарных владельцах",
+        "required_facts": {
+          "action": "update",
+          "object": "beneficiary_information"
+        },
+        "evidence_scope": ["action", "object"],
+        "verification": {
+          "COMPLIANT": {
+            "all": [
+              {"field": "action", "equals": "update"},
+              {"field": "object", "equals": "beneficiary_information"}
+            ]
+          },
+          "PARTIAL": {
+            "exactly_one": [
+              {"field": "action", "equals": "update"},
+              {"field": "object", "equals": "beneficiary_information"}
+            ]
+          },
+          "NOT_FOUND": {
+            "all": [
+              {"field": "action", "not_found": true},
+              {"field": "object", "not_found": true}
+            ]
+          },
+          "UNCLEAR": {
+            "condition": "evidence_is_ambiguous"
+          }
+        }
+      },
+      "R2": {
+        "description": "Обновлять информацию не реже одного раза в год",
+        "required_facts": {
+          "action": "update",
+          "object": "beneficiary_information",
+          "frequency": {
+            "interval_months_max": 12
+          }
+        },
+        "evidence_scope": ["action", "object", "frequency"],
+        "verification": {
+          "COMPLIANT": {
+            "all": [
+              {"field": "action", "equals": "update"},
+              {"field": "object", "equals": "beneficiary_information"},
+              {"field": "frequency", "less_than_or_equal": 12}
+            ]
+          },
+          "PARTIAL": {
+            "all": [
+              {"field": "action", "equals": "update"},
+              {"field": "object", "equals": "beneficiary_information"},
+              {"field": "frequency", "greater_than": 12}
+            ]
+          },
+          "NOT_FOUND": {
+            "any": [
+              {"field": "action", "not_found": true},
+              {"field": "object", "not_found": true}
+            ]
+          },
+          "UNCLEAR": {
+            "condition": "frequency_is_ambiguous"
+          }
+        }
+      },
+      "R3": {
+        "description": "При изменении сведений обновлять информацию",
+        "required_facts": {
+          "condition": "on_change",
+          "action": "update",
+          "object": "beneficiary_information"
+        },
+        "evidence_scope": ["condition", "action", "object"],
+        "verification": {
+          "COMPLIANT": {
+            "all": [
+              {"field": "condition", "equals": "on_change"},
+              {"field": "action", "equals": "update"},
+              {"field": "object", "equals": "beneficiary_information"}
+            ]
+          },
+          "PARTIAL": {
+            "condition": "on_change_found_but_action_or_object_incomplete"
+          },
+          "NOT_FOUND": {
+            "any": [
+              {"field": "condition", "not_found": true},
+              {"field": "action", "not_found": true},
+              {"field": "object", "not_found": true}
+            ]
+          },
+          "UNCLEAR": {
+            "condition": "evidence_is_ambiguous"
+          }
+        }
+      },
+      "R4": {
+        "description": "Документально фиксировать полученную информацию",
+        "required_facts": {
+          "action": "document",
+          "object": "beneficiary_information"
+        },
+        "evidence_scope": ["action", "object"],
+        "verification": {
+          "COMPLIANT": {
+            "all": [
+              {"field": "action", "equals": "document"},
+              {"field": "object", "equals": "beneficiary_information"}
+            ]
+          },
+          "PARTIAL": {
+            "exactly_one": [
+              {"field": "action", "equals": "document"},
+              {"field": "object", "equals": "beneficiary_information"}
+            ]
+          },
+          "NOT_FOUND": {
+            "all": [
+              {"field": "action", "not_found": true},
+              {"field": "object", "not_found": true}
+            ]
+          },
+          "UNCLEAR": {
+            "condition": "evidence_is_ambiguous"
+          }
+        }
+      }
+    }
+  }
+}
