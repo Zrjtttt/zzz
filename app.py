@@ -3,6 +3,8 @@
 
 """
 LEGAL QA SYSTEM - Интерфейс с двумя режимами
+Левая колонка: чек-лист (эталон из закона, без ИИ)
+Правая колонка: проверка документа (логика без ИИ + ИИ-анализ)
 """
 
 import streamlit as st
@@ -18,6 +20,10 @@ from src.understanding.question_frame import QuestionFrame
 from src.router.router import Router
 from src.check_verifier import CheckVerifier
 
+
+# ============================================================
+# ЗАГРУЗКА ДАННЫХ
+# ============================================================
 
 @st.cache_resource
 def load_system():
@@ -52,6 +58,10 @@ def load_system():
     return router, norms, verifier
 
 
+# ============================================================
+# ВОПРОСЫ ДЛЯ ЛЕВОЙ КОЛОНКИ (НЕ МЕНЯЕМ)
+# ============================================================
+
 QUESTIONS_LEFT = [
     {"id": "q1", "category": "КТО?", "text": "Кто является бенефициарным владельцем?", "norm_id": "8",
      "expected": "Физическое лицо, владеющее более 25% капитала или контролирующее действия"},
@@ -64,6 +74,11 @@ QUESTIONS_LEFT = [
     {"id": "q5", "category": "КОМУ?", "text": "Перед какими органами нужно отчитываться?", "norm_id": "6",
      "expected": "Уполномоченный орган, налоговые органы, федеральный орган по регистрации НКО"},
 ]
+
+
+# ============================================================
+# ВОПРОСЫ ДЛЯ ПРАВОЙ КОЛОНКИ (ПРОВЕРКА ДОКУМЕНТА)
+# ============================================================
 
 QUESTIONS_RIGHT = [
     {"id": "d1", "text": "Кто является бенефициарным владельцем?", "norm_id": "8",
@@ -79,42 +94,78 @@ QUESTIONS_RIGHT = [
 ]
 
 
-def call_ai_explanation(api_key: str, question: str, expected: str, document_text: str, result: dict) -> str:
+# ============================================================
+# ФУНКЦИЯ: AI-АНАЛИЗ ДОКУМЕНТА (СТРУКТУРИРОВАННЫЙ JSON)
+# ============================================================
+
+def call_ai_analysis(api_key: str, question: str, expected: str, document_text: str,
+                     requirements: list) -> dict:
+    """
+    Отправляет вопрос + эталон + документ + требования в ИИ.
+    ИИ возвращает структурированный JSON с фактами.
+    """
     import requests
 
-    req_details = ""
-    for req_id, req_result in result.get('requirements', {}).items():
-        status = req_result.get('result', 'unknown')
-        desc = req_result.get('description', '')
-        facts = req_result.get('facts', {})
-        facts_str = ", ".join([f"{k}: {v}" for k, v in facts.items() if v is not None])
-        req_details += f"\n- {req_id}: {desc} — {status}"
-        if facts_str:
-            req_details += f" (найдено: {facts_str})"
+    # Формируем список требований
+    req_list = "\n".join([f"{r['id']}: {r['text']}" for r in requirements])
 
-    verdict = result.get('verdict', 'unknown')
+    prompt = f"""Ты — система проверки документов по статье 6.1 115-ФЗ.
 
-    prompt = f"""Ты — юридический ассистент по статье 6.1 115-ФЗ.
-
-Пользователь проверил документ по вопросу:
+Пользователь проверяет документ по вопросу:
 "{question}"
 
 Что требует закон:
 "{expected}"
 
-Результат проверки: {verdict}
+Требования (R1-R4):
+{req_list}
 
-Детали по требованиям:{req_details}
+Документ:
+{document_text[:15000]}
 
-Фрагмент документа (первые 3000 символов):
-{document_text[:3000]}
+ЗАДАЧА:
+1. Найди в документе ответ на вопрос
+2. Для каждого требования (R1-R4) извлеки факты:
+   - action: "update" / "document" / null
+   - object: "beneficiary_information" / "received_information" / null
+   - frequency: число (месяцев) / null
+   - condition: "on_change" / null
+3. Укажи фрагмент документа, где это найдено (цитата)
+4. Оцени статус каждого требования: ВЫПОЛНЕНО / ЧАСТИЧНО / НЕ ВЫПОЛНЕНО / НЕЯСНО
+5. Сделай общий вывод
 
-Объясни пользователю простым языком:
-1. Почему такой результат (что совпало, что нет)
-2. Что именно нужно исправить в документе
-3. Дай практическую рекомендацию
+Верни ТОЛЬКО JSON. БЕЗ пояснений.
 
-Ответ должен быть понятен сотруднику банка, не юристу.
+ФОРМАТ JSON:
+{{
+  "question": "{question}",
+  "document_facts": {{
+    "R1": {{
+      "action": "update",
+      "object": "beneficiary_information",
+      "fragment": "цитата из документа",
+      "status": "ВЫПОЛНЕНО"
+    }},
+    "R2": {{
+      "frequency": 12,
+      "fragment": "цитата",
+      "status": "ВЫПОЛНЕНО"
+    }},
+    "R3": {{
+      "condition": null,
+      "fragment": null,
+      "status": "НЕ ВЫПОЛНЕНО"
+    }},
+    "R4": {{
+      "action": "document",
+      "object": "beneficiary_information",
+      "fragment": "цитата",
+      "status": "ВЫПОЛНЕНО"
+    }}
+  }},
+  "verdict": "COMPLIANT / PARTIAL / NOT_FOUND / UNCLEAR",
+  "explanation": "краткое объяснение результата"
+}}
 """
 
     headers = {
@@ -127,11 +178,11 @@ def call_ai_explanation(api_key: str, question: str, expected: str, document_tex
     payload = {
         "model": "deepseek/deepseek-chat-v3-0324",
         "messages": [
-            {"role": "system", "content": "Ты — юридический ассистент. Отвечай понятно и структурированно."},
+            {"role": "system", "content": "Ты — система извлечения фактов. Отвечай только JSON."},
             {"role": "user", "content": prompt}
         ],
-        "temperature": 0.3,
-        "max_tokens": 2000
+        "temperature": 0.2,
+        "max_tokens": 2500
     }
 
     try:
@@ -139,17 +190,27 @@ def call_ai_explanation(api_key: str, question: str, expected: str, document_tex
             "https://openrouter.ai/api/v1/chat/completions",
             json=payload,
             headers=headers,
-            timeout=90
+            timeout=120
         )
         if response.status_code != 200:
-            return f"⚠️ Ошибка API: {response.status_code}"
-        result_data = response.json()
-        return result_data["choices"][0]["message"]["content"]
+            return {"error": f"Ошибка API: {response.status_code}"}
+
+        result = response.json()
+        content = result["choices"][0]["message"]["content"]
+
+        # Извлекаем JSON из ответа
+        import re
+        match = re.search(r'\{.*\}', content, re.DOTALL)
+        if match:
+            return json.loads(match.group(0))
+        else:
+            return {"error": "Не удалось извлечь JSON", "raw": content[:500]}
     except Exception as e:
-        return f"⚠️ Ошибка: {str(e)}"
+        return {"error": str(e)}
 
 
 def check_api_key(api_key: str) -> bool:
+    """Проверяет, работает ли API-ключ"""
     import requests
     if not api_key:
         return False
@@ -172,6 +233,29 @@ def check_api_key(api_key: str) -> bool:
         return False
 
 
+def get_requirements_for_question(norm_id: str) -> list:
+    """
+    Возвращает требования (R1-R4) для конкретной нормы.
+    Пока используем хардкод для нормы 3.1 (CHECK_001).
+    """
+    if norm_id == "3.1":
+        return [
+            {"id": "R1", "text": "Обновлять информацию о бенефициарных владельцах"},
+            {"id": "R2", "text": "Не реже одного раза в год"},
+            {"id": "R3", "text": "При изменении сведений"},
+            {"id": "R4", "text": "Документально фиксировать полученную информацию"},
+        ]
+    else:
+        # Для других норм — простые требования
+        return [
+            {"id": "R1", "text": "Соответствие требованию"},
+        ]
+
+
+# ============================================================
+# ОСНОВНОЙ ИНТЕРФЕЙС
+# ============================================================
+
 def main():
     st.set_page_config(
         page_title="Проверка по статье 6.1",
@@ -182,14 +266,18 @@ def main():
     st.title("⚖️ Проверка по статье 6.1 115-ФЗ")
     st.caption("Бенефициарные владельцы — требования к документам")
 
+    # ============================================================
+    # БОКОВАЯ ПАНЕЛЬ: API-КЛЮЧ
+    # ============================================================
+
     with st.sidebar:
         st.header("🔑 API-ключ OpenRouter")
 
         api_key_input = st.text_input(
-            "Введите ключ для AI-объяснений:",
+            "Введите ключ для AI-анализа:",
             type="password",
             key="api_key_input",
-            help="Ключ нужен только для объяснений. Без него всё остальное работает."
+            help="Ключ нужен для AI-анализа документа."
         )
 
         if api_key_input:
@@ -204,7 +292,7 @@ def main():
             else:
                 st.error("❌ Ключ не работает")
         else:
-            st.info("ℹ️ Без ключа AI-объяснения недоступны")
+            st.info("ℹ️ Без ключа AI-анализ недоступен")
 
         st.divider()
         st.caption("Левая колонка: ответы из закона")
@@ -212,13 +300,15 @@ def main():
 
     api_key = st.session_state.get('api_key_checked', '') if st.session_state.get('api_key_valid') else ''
 
+    # Загружаем систему
     with st.spinner("Загрузка..."):
         router, norms, verifier = load_system()
 
+    # ДВЕ КОЛОНКИ
     col_left, col_right = st.columns(2, gap="large")
 
     # ============================================================
-    # ЛЕВАЯ КОЛОНКА
+    # ЛЕВАЯ КОЛОНКА: ЧЕК-ЛИСТ (НЕ МЕНЯЕМ)
     # ============================================================
 
     with col_left:
@@ -260,13 +350,14 @@ def main():
         st.caption("💡 Выберите вопрос слева — узнайте, что требует закон")
 
     # ============================================================
-    # ПРАВАЯ КОЛОНКА
+    # ПРАВАЯ КОЛОНКА: ПРОВЕРКА ДОКУМЕНТА (НОВАЯ ЛОГИКА)
     # ============================================================
 
     with col_right:
         st.subheader("📄 Проверка документа")
         st.caption("Загрузите документ и выберите вопрос для проверки")
 
+        # Загрузка документа
         uploaded_file = st.file_uploader(
             "Загрузите документ (TXT)",
             type=['txt'],
@@ -289,94 +380,146 @@ def main():
                 key="question_selector"
             )
 
-            if st.button("🔍 Проверить документ", type="primary", use_container_width=True):
-                selected_q = next((q for q in QUESTIONS_RIGHT if q['id'] == selected_q_id), None)
+            selected_q = next((q for q in QUESTIONS_RIGHT if q['id'] == selected_q_id), None)
 
+            # === АВТОМАТИЧЕСКИЙ AI-АНАЛИЗ (при выборе вопроса) ===
+            if selected_q and api_key:
+                # Проверяем, менялся ли вопрос или документ
+                cache_key = f"{selected_q_id}_{len(document_text)}"
+                if st.session_state.get('ai_cache_key') != cache_key:
+                    with st.status("⏳ AI анализирует документ...", expanded=True) as status:
+                        st.write(f"Вопрос: {selected_q['text']}")
+                        st.write("Отправка в DeepSeek...")
+
+                        requirements = get_requirements_for_question(selected_q['norm_id'])
+                        ai_result = call_ai_analysis(
+                            api_key,
+                            selected_q['text'],
+                            selected_q['expected'],
+                            document_text,
+                            requirements
+                        )
+
+                        st.session_state['ai_result'] = ai_result
+                        st.session_state['ai_cache_key'] = cache_key
+                        status.update(label="✅ AI-анализ готов", state="complete")
+
+            # === КНОПКА "ПРОВЕРИТЬ" (БЕЗ ИИ) ===
+            if st.button("🔍 Проверить документ (без ИИ)", type="primary", use_container_width=True):
                 if selected_q is None:
                     st.error("Вопрос не найден")
                 else:
-                    with st.spinner("Проверка документа..."):
+                    st.divider()
+                    st.subheader("📊 Результат проверки (логика без ИИ)")
+
+                    st.markdown(f"**Вопрос:** {selected_q['text']}")
+
+                    st.markdown("---")
+                    st.markdown("**📖 Что требует закон:**")
+                    st.success(selected_q['expected'])
+                    st.caption(f"📌 Источник: норма {selected_q['norm_id']}")
+
+                    st.markdown("---")
+                    st.markdown("**📄 Что найдено в документе:**")
+
+                    temp_path = Path("/tmp/uploaded_doc_check.txt")
+                    temp_path.write_text(document_text, encoding='utf-8')
+
+                    if verifier:
+                        result = verifier.verify(str(temp_path))
+
+                        for req_id, req_result in result['requirements'].items():
+                            status = req_result['result']
+                            if status == 'COMPLIANT':
+                                icon, status_text = "✅", "ВЫПОЛНЕНО"
+                            elif status == 'PARTIAL':
+                                icon, status_text = "⚠️", "ЧАСТИЧНО"
+                            elif status == 'NOT_FOUND':
+                                icon, status_text = "❌", "НЕ ВЫПОЛНЕНО"
+                            else:
+                                icon, status_text = "❓", "НЕЯСНО"
+
+                            st.markdown(f"{icon} **{req_id}:** {req_result['description']} — **{status_text}**")
+
+                            facts = req_result.get('facts', {})
+                            if facts:
+                                found_items = [f"{k}: {v}" for k, v in facts.items() if v is not None]
+                                if found_items:
+                                    st.caption(f"   📄 Найдено: {', '.join(found_items)}")
+
+                        verdict = result['verdict']
                         st.divider()
-                        st.subheader("📊 Результат проверки")
 
-                        st.markdown(f"**Вопрос:** {selected_q['text']}")
-
-                        st.markdown("---")
-                        st.markdown("**📖 Что требует закон:**")
-                        st.success(selected_q['expected'])
-                        st.caption(f"📌 Источник: норма {selected_q['norm_id']}")
-
-                        st.markdown("---")
-                        st.markdown("**📄 Что найдено в документе:**")
-
-                        temp_path = Path("/tmp/uploaded_doc_check.txt")
-                        temp_path.write_text(document_text, encoding='utf-8')
-
-                        if verifier:
-                            result = verifier.verify(str(temp_path))
-
-                            for req_id, req_result in result['requirements'].items():
-                                status = req_result['result']
-                                if status == 'COMPLIANT':
-                                    icon, status_text = "✅", "ВЫПОЛНЕНО"
-                                elif status == 'PARTIAL':
-                                    icon, status_text = "⚠️", "ЧАСТИЧНО"
-                                elif status == 'NOT_FOUND':
-                                    icon, status_text = "❌", "НЕ ВЫПОЛНЕНО"
-                                else:
-                                    icon, status_text = "❓", "НЕЯСНО"
-
-                                st.markdown(f"{icon} **{req_id}:** {req_result['description']} — **{status_text}**")
-
-                                facts = req_result.get('facts', {})
-                                if facts:
-                                    found_items = [f"{k}: {v}" for k, v in facts.items() if v is not None]
-                                    if found_items:
-                                        st.caption(f"   📄 Найдено: {', '.join(found_items)}")
-
-                            verdict = result['verdict']
-                            st.divider()
-
-                            if verdict == 'COMPLIANT':
-                                st.success("✅ ВЕРДИКТ: Документ ПОЛНОСТЬЮ соответствует требованиям")
-                            elif verdict == 'PARTIAL':
-                                st.warning("⚠️ ВЕРДИКТ: Документ соответствует ЧАСТИЧНО")
-                            elif verdict == 'NOT_FOUND':
-                                st.error("❌ ВЕРДИКТ: Требования НЕ ВЫПОЛНЕНЫ")
-                            else:
-                                st.info("❓ ВЕРДИКТ: НЕ УДАЛОСЬ ОДНОЗНАЧНО ОПРЕДЕЛИТЬ")
-
-                            # === КНОПКА "ОБЪЯСНИТЬ" (ИСПРАВЛЕННАЯ) ===
-                            st.divider()
-
-                            if api_key:
-                                if st.button("🤖 Объяснить результат", use_container_width=True, key="explain_button"):
-                                    st.session_state['need_ai_explanation'] = True
-                                    st.session_state['ai_explanation'] = None
-
-                                if st.session_state.get('need_ai_explanation'):
-                                    with st.status("⏳ Ждите, AI анализирует документ...", expanded=True) as status:
-                                        st.write("Отправка запроса в DeepSeek...")
-                                        explanation = call_ai_explanation(
-                                            api_key,
-                                            selected_q['text'],
-                                            selected_q['expected'],
-                                            document_text,
-                                            result
-                                        )
-                                        st.session_state['ai_explanation'] = explanation
-                                        st.session_state['need_ai_explanation'] = False
-                                        status.update(label="✅ AI-объяснение готово", state="complete")
-
-                                if st.session_state.get('ai_explanation'):
-                                    st.markdown("### 🤖 AI-объяснение:")
-                                    st.info(st.session_state['ai_explanation'])
-                            else:
-                                st.caption("ℹ️ Введите API-ключ в боковой панели, чтобы получить AI-объяснение")
+                        if verdict == 'COMPLIANT':
+                            st.success("✅ ВЕРДИКТ: Документ ПОЛНОСТЬЮ соответствует")
+                        elif verdict == 'PARTIAL':
+                            st.warning("⚠️ ВЕРДИКТ: Документ соответствует ЧАСТИЧНО")
+                        elif verdict == 'NOT_FOUND':
+                            st.error("❌ ВЕРДИКТ: Требования НЕ ВЫПОЛНЕНЫ")
                         else:
-                            st.warning("⚠️ Verifier не загружен. Проверьте наличие checks.json")
+                            st.info("❓ ВЕРДИКТ: НЕ УДАЛОСЬ ОДНОЗНАЧНО ОПРЕДЕЛИТЬ")
+                    else:
+                        st.warning("⚠️ Verifier не загружен")
 
-                        temp_path.unlink(missing_ok=True)
+                    temp_path.unlink(missing_ok=True)
+
+            # === AI-АНАЛИЗ СНИЗУ ===
+            if st.session_state.get('ai_result'):
+                ai_result = st.session_state['ai_result']
+
+                st.divider()
+                st.subheader("🤖 AI-анализ документа")
+
+                if 'error' in ai_result:
+                    st.error(f"Ошибка AI: {ai_result['error']}")
+                else:
+                    # Показываем факты по требованиям
+                    st.markdown("**Что AI нашёл в документе:**")
+
+                    facts_data = ai_result.get('document_facts', {})
+                    for req_id, req_data in facts_data.items():
+                        status = req_data.get('status', 'НЕЯСНО')
+                        if status == 'ВЫПОЛНЕНО':
+                            icon = "✅"
+                        elif status == 'ЧАСТИЧНО':
+                            icon = "⚠️"
+                        elif status == 'НЕ ВЫПОЛНЕНО':
+                            icon = "❌"
+                        else:
+                            icon = "❓"
+
+                        st.markdown(f"{icon} **{req_id}:** {status}")
+
+                        fragment = req_data.get('fragment')
+                        if fragment:
+                            st.caption(f"   📄 Фрагмент: \"{fragment[:200]}\"")
+
+                        # Показываем извлечённые факты
+                        facts = {k: v for k, v in req_data.items()
+                                 if k not in ['fragment', 'status'] and v is not None}
+                        if facts:
+                            st.caption(f"   🔍 Факты: {facts}")
+
+                    # Вердикт AI
+                    ai_verdict = ai_result.get('verdict', 'UNCLEAR')
+                    explanation = ai_result.get('explanation', '')
+
+                    st.divider()
+                    if ai_verdict == 'COMPLIANT':
+                        st.success(f"🤖 AI ВЕРДИКТ: COMPLIANT")
+                    elif ai_verdict == 'PARTIAL':
+                        st.warning(f"🤖 AI ВЕРДИКТ: PARTIAL")
+                    elif ai_verdict == 'NOT_FOUND':
+                        st.error(f"🤖 AI ВЕРДИКТ: NOT_FOUND")
+                    else:
+                        st.info(f"🤖 AI ВЕРДИКТ: UNCLEAR")
+
+                    if explanation:
+                        st.markdown("**Объяснение AI:**")
+                        st.info(explanation)
+
+            elif not api_key:
+                st.info("ℹ️ Введите API-ключ в боковой панели, чтобы увидеть AI-анализ")
         else:
             st.info("📤 Загрузите текстовый документ для проверки")
 
