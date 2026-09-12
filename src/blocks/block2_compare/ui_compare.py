@@ -6,7 +6,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from src.blocks.block2_compare.comparator import (
+from .comparator import (
     get_available_versions,
     format_version,
     load_version,
