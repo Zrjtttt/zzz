@@ -15,3 +15,5 @@ __pycache__/
 build/
 dist/
 errors.log
+app.py.backup_block1
+*.backup_*

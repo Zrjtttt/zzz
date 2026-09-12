@@ -256,16 +256,7 @@ def get_requirements_for_question(norm_id: str) -> list:
 # ОСНОВНОЙ ИНТЕРФЕЙС
 # ============================================================
 
-def main():
-    st.set_page_config(
-        page_title="Проверка по статье 6.1",
-        page_icon="⚖️",
-        layout="wide"
-    )
-
-    st.title("⚖️ Проверка по статье 6.1 115-ФЗ")
-    st.caption("Бенефициарные владельцы — требования к документам")
-
+def render_block1():
     # ============================================================
     # БОКОВАЯ ПАНЕЛЬ: API-КЛЮЧ
     # ============================================================
@@ -525,6 +516,29 @@ def main():
 
     st.divider()
     st.caption("⚖️ Система проверяет документы по статье 6.1 115-ФЗ.")
+
+
+def main():
+    st.set_page_config(
+        page_title="Legal QA System",
+        page_icon="⚖️",
+        layout="wide"
+    )
+
+    st.title("⚖️ Legal QA System")
+    st.caption("Проверка документов и сравнение версий закона")
+
+    tab1, tab2 = st.tabs([
+        "📄 Проверка документа",
+        "📊 Сравнение версий",
+    ])
+
+    with tab1:
+        render_block1()
+
+    with tab2:
+        from src.blocks.block2_compare.ui_compare import render as render_block2
+        render_block2()
 
 
 if __name__ == "__main__":
