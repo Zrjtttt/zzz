@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
-LEGAL QA SYSTEM - Интерфейс с двумя режимами
-Левая колонка: чек-лист (эталон из закона, без ИИ)
-Правая колонка: проверка документа (логика без ИИ + ИИ-анализ)
+LEGAL QA SYSTEM - Интерфейс с двумя табами
+Таб 1: проверка документа (чек-лист + AI-анализ)
+Таб 2: сравнение версий закона
 """
 
 import streamlit as st
@@ -95,6 +95,43 @@ QUESTIONS_RIGHT = [
 
 
 # ============================================================
+# ИЗВЛЕЧЕНИЕ ТЕКСТА ИЗ ЗАГРУЖЕННОГО ФАЙЛА
+# ============================================================
+
+def extract_text_from_file(uploaded_file) -> str:
+    """
+    Извлекает текст из загруженного файла.
+    Поддерживает: TXT, DOCX, PDF.
+    """
+    name = uploaded_file.name.lower()
+    raw = uploaded_file.read()
+
+    if name.endswith('.txt'):
+        return raw.decode('utf-8', errors='ignore')
+
+    if name.endswith('.docx'):
+        import io
+        import docx
+        doc = docx.Document(io.BytesIO(raw))
+        return "\n".join(
+            p.text for p in doc.paragraphs if p.text.strip()
+        )
+
+    if name.endswith('.pdf'):
+        import io
+        from pypdf import PdfReader
+        reader = PdfReader(io.BytesIO(raw))
+        pages = []
+        for page in reader.pages:
+            text = page.extract_text() or ""
+            if text.strip():
+                pages.append(text)
+        return "\n".join(pages)
+
+    raise ValueError(f"Неподдерживаемый формат файла: {uploaded_file.name}")
+
+
+# ============================================================
 # ФУНКЦИЯ: AI-АНАЛИЗ ДОКУМЕНТА (СТРУКТУРИРОВАННЫЙ JSON)
 # ============================================================
 
@@ -106,7 +143,6 @@ def call_ai_analysis(api_key: str, question: str, expected: str, document_text: 
     """
     import requests
 
-    # Формируем список требований
     req_list = "\n".join([f"{r['id']}: {r['text']}" for r in requirements])
 
     prompt = f"""Ты — система проверки документов по статье 6.1 115-ФЗ.
@@ -198,7 +234,6 @@ def call_ai_analysis(api_key: str, question: str, expected: str, document_text: 
         result = response.json()
         content = result["choices"][0]["message"]["content"]
 
-        # Извлекаем JSON из ответа
         import re
         match = re.search(r'\{.*\}', content, re.DOTALL)
         if match:
@@ -234,10 +269,7 @@ def check_api_key(api_key: str) -> bool:
 
 
 def get_requirements_for_question(norm_id: str) -> list:
-    """
-    Возвращает требования (R1-R4) для конкретной нормы.
-    Пока используем хардкод для нормы 3.1 (CHECK_001).
-    """
+    """Возвращает требования (R1-R4) для конкретной нормы."""
     if norm_id == "3.1":
         return [
             {"id": "R1", "text": "Обновлять информацию о бенефициарных владельцах"},
@@ -246,26 +278,16 @@ def get_requirements_for_question(norm_id: str) -> list:
             {"id": "R4", "text": "Документально фиксировать полученную информацию"},
         ]
     else:
-        # Для других норм — простые требования
         return [
             {"id": "R1", "text": "Соответствие требованию"},
         ]
 
 
 # ============================================================
-# ОСНОВНОЙ ИНТЕРФЕЙС
+# ТАБ 1: ПРОВЕРКА ДОКУМЕНТА
 # ============================================================
 
-def main():
-    st.set_page_config(
-        page_title="Проверка по статье 6.1",
-        page_icon="⚖️",
-        layout="wide"
-    )
-
-    st.title("⚖️ Проверка по статье 6.1 115-ФЗ")
-    st.caption("Бенефициарные владельцы — требования к документам")
-
+def render_block1():
     # ============================================================
     # БОКОВАЯ ПАНЕЛЬ: API-КЛЮЧ
     # ============================================================
@@ -308,7 +330,7 @@ def main():
     col_left, col_right = st.columns(2, gap="large")
 
     # ============================================================
-    # ЛЕВАЯ КОЛОНКА: ЧЕК-ЛИСТ (НЕ МЕНЯЕМ)
+    # ЛЕВАЯ КОЛОНКА: ЧЕК-ЛИСТ
     # ============================================================
 
     with col_left:
@@ -350,181 +372,253 @@ def main():
         st.caption("💡 Выберите вопрос слева — узнайте, что требует закон")
 
     # ============================================================
-    # ПРАВАЯ КОЛОНКА: ПРОВЕРКА ДОКУМЕНТА (НОВАЯ ЛОГИКА)
+    # ПРАВАЯ КОЛОНКА: ПРОВЕРКА ДОКУМЕНТА
     # ============================================================
 
     with col_right:
         st.subheader("📄 Проверка документа")
-        st.caption("Загрузите документ и выберите вопрос для проверки")
+        st.caption(
+            "Загрузите документ, выберите вопрос — "
+            "и он уйдёт в AI-анализ"
+        )
 
         # Загрузка документа
         uploaded_file = st.file_uploader(
-            "Загрузите документ (TXT)",
-            type=['txt'],
+            "Загрузите документ (TXT, DOCX, PDF)",
+            type=['txt', 'docx', 'pdf'],
             key="document_uploader_right"
         )
 
         if uploaded_file is not None:
-            document_text = uploaded_file.read().decode('utf-8')
-            st.success(f"✅ Загружен: {uploaded_file.name} ({len(document_text)} символов)")
+            try:
+                document_text = extract_text_from_file(uploaded_file)
+                st.success(
+                    f"✅ Загружен: {uploaded_file.name} "
+                    f"({len(document_text)} символов)"
+                )
+            except Exception as exc:
+                st.error(f"❌ Ошибка чтения файла: {exc}")
+                document_text = None
 
-            st.divider()
-            st.markdown("**Выберите вопрос для проверки:**")
-
-            question_options = {q['id']: q['text'] for q in QUESTIONS_RIGHT}
-
-            selected_q_id = st.selectbox(
-                "Вопрос",
-                options=list(question_options.keys()),
-                format_func=lambda x: question_options[x],
-                key="question_selector"
-            )
-
-            selected_q = next((q for q in QUESTIONS_RIGHT if q['id'] == selected_q_id), None)
-
-            # === АВТОМАТИЧЕСКИЙ AI-АНАЛИЗ (при выборе вопроса) ===
-            if selected_q and api_key:
-                # Проверяем, менялся ли вопрос или документ
-                cache_key = f"{selected_q_id}_{len(document_text)}"
-                if st.session_state.get('ai_cache_key') != cache_key:
-                    with st.status("⏳ AI анализирует документ...", expanded=True) as status:
-                        st.write(f"Вопрос: {selected_q['text']}")
-                        st.write("Отправка в DeepSeek...")
-
-                        requirements = get_requirements_for_question(selected_q['norm_id'])
-                        ai_result = call_ai_analysis(
-                            api_key,
-                            selected_q['text'],
-                            selected_q['expected'],
-                            document_text,
-                            requirements
-                        )
-
-                        st.session_state['ai_result'] = ai_result
-                        st.session_state['ai_cache_key'] = cache_key
-                        status.update(label="✅ AI-анализ готов", state="complete")
-
-            # === КНОПКА "ПРОВЕРИТЬ" (БЕЗ ИИ) ===
-            if st.button("🔍 Проверить документ (без ИИ)", type="primary", use_container_width=True):
-                if selected_q is None:
-                    st.error("Вопрос не найден")
-                else:
-                    st.divider()
-                    st.subheader("📊 Результат проверки (логика без ИИ)")
-
-                    st.markdown(f"**Вопрос:** {selected_q['text']}")
-
-                    st.markdown("---")
-                    st.markdown("**📖 Что требует закон:**")
-                    st.success(selected_q['expected'])
-                    st.caption(f"📌 Источник: норма {selected_q['norm_id']}")
-
-                    st.markdown("---")
-                    st.markdown("**📄 Что найдено в документе:**")
-
-                    temp_path = Path("/tmp/uploaded_doc_check.txt")
-                    temp_path.write_text(document_text, encoding='utf-8')
-
-                    if verifier:
-                        result = verifier.verify(str(temp_path))
-
-                        for req_id, req_result in result['requirements'].items():
-                            status = req_result['result']
-                            if status == 'COMPLIANT':
-                                icon, status_text = "✅", "ВЫПОЛНЕНО"
-                            elif status == 'PARTIAL':
-                                icon, status_text = "⚠️", "ЧАСТИЧНО"
-                            elif status == 'NOT_FOUND':
-                                icon, status_text = "❌", "НЕ ВЫПОЛНЕНО"
-                            else:
-                                icon, status_text = "❓", "НЕЯСНО"
-
-                            st.markdown(f"{icon} **{req_id}:** {req_result['description']} — **{status_text}**")
-
-                            facts = req_result.get('facts', {})
-                            if facts:
-                                found_items = [f"{k}: {v}" for k, v in facts.items() if v is not None]
-                                if found_items:
-                                    st.caption(f"   📄 Найдено: {', '.join(found_items)}")
-
-                        verdict = result['verdict']
-                        st.divider()
-
-                        if verdict == 'COMPLIANT':
-                            st.success("✅ ВЕРДИКТ: Документ ПОЛНОСТЬЮ соответствует")
-                        elif verdict == 'PARTIAL':
-                            st.warning("⚠️ ВЕРДИКТ: Документ соответствует ЧАСТИЧНО")
-                        elif verdict == 'NOT_FOUND':
-                            st.error("❌ ВЕРДИКТ: Требования НЕ ВЫПОЛНЕНЫ")
-                        else:
-                            st.info("❓ ВЕРДИКТ: НЕ УДАЛОСЬ ОДНОЗНАЧНО ОПРЕДЕЛИТЬ")
-                    else:
-                        st.warning("⚠️ Verifier не загружен")
-
-                    temp_path.unlink(missing_ok=True)
-
-            # === AI-АНАЛИЗ СНИЗУ ===
-            if st.session_state.get('ai_result'):
-                ai_result = st.session_state['ai_result']
-
+            if document_text:
                 st.divider()
-                st.subheader("🤖 AI-анализ документа")
+                st.markdown("**Выберите вопрос для анализа:**")
+                st.caption(
+                    "AI-анализ запустится автоматически "
+                    "после выбора вопроса"
+                )
 
-                if 'error' in ai_result:
-                    st.error(f"Ошибка AI: {ai_result['error']}")
+                question_options = {
+                    q['id']: q['text'] for q in QUESTIONS_RIGHT
+                }
+
+                selected_q_id = st.selectbox(
+                    "Вопрос",
+                    options=list(question_options.keys()),
+                    format_func=lambda x: question_options[x],
+                    index=None,
+                    placeholder="— выберите вопрос —",
+                    key="question_selector"
+                )
+
+                selected_q = next(
+                    (q for q in QUESTIONS_RIGHT if q['id'] == selected_q_id),
+                    None
+                )
+
+                # === AI-АНАЛИЗ: только после явного выбора вопроса ===
+                if selected_q is None:
+                    st.info(
+                        "ℹ️ Выберите вопрос из списка — "
+                        "документ уйдёт в AI-анализ"
+                    )
+
+                elif not api_key:
+                    st.warning(
+                        "⚠️ Введите API-ключ в боковой панели, "
+                        "чтобы запустить AI-анализ"
+                    )
+
                 else:
-                    # Показываем факты по требованиям
-                    st.markdown("**Что AI нашёл в документе:**")
+                    cache_key = f"{selected_q_id}_{len(document_text)}"
+                    if st.session_state.get('ai_cache_key') != cache_key:
+                        # Сбрасываем предыдущий результат
+                        st.session_state.pop('ai_result', None)
 
-                    facts_data = ai_result.get('document_facts', {})
-                    for req_id, req_data in facts_data.items():
-                        status = req_data.get('status', 'НЕЯСНО')
-                        if status == 'ВЫПОЛНЕНО':
-                            icon = "✅"
-                        elif status == 'ЧАСТИЧНО':
-                            icon = "⚠️"
-                        elif status == 'НЕ ВЫПОЛНЕНО':
-                            icon = "❌"
+                        with st.status(
+                            "⏳ AI анализирует документ...",
+                            expanded=True
+                        ) as status:
+                            st.write(f"Вопрос: {selected_q['text']}")
+                            st.write("Отправка в DeepSeek...")
+
+                            requirements = get_requirements_for_question(
+                                selected_q['norm_id']
+                            )
+                            ai_result = call_ai_analysis(
+                                api_key,
+                                selected_q['text'],
+                                selected_q['expected'],
+                                document_text,
+                                requirements
+                            )
+
+                            st.session_state['ai_result'] = ai_result
+                            st.session_state['ai_cache_key'] = cache_key
+                            status.update(
+                                label="✅ AI-анализ готов",
+                                state="complete"
+                            )
+
+                # === КНОПКА "ПРОВЕРИТЬ" (БЕЗ ИИ) ===
+                if st.button("🔍 Проверить документ (без ИИ)", type="primary", use_container_width=True):
+                    if selected_q is None:
+                        st.error("Сначала выберите вопрос")
+                    else:
+                        st.divider()
+                        st.subheader("📊 Результат проверки (логика без ИИ)")
+
+                        st.markdown(f"**Вопрос:** {selected_q['text']}")
+
+                        st.markdown("---")
+                        st.markdown("**📖 Что требует закон:**")
+                        st.success(selected_q['expected'])
+                        st.caption(f"📌 Источник: норма {selected_q['norm_id']}")
+
+                        st.markdown("---")
+                        st.markdown("**📄 Что найдено в документе:**")
+
+                        temp_path = Path("/tmp/uploaded_doc_check.txt")
+                        temp_path.write_text(document_text, encoding='utf-8')
+
+                        if verifier:
+                            result = verifier.verify(str(temp_path))
+
+                            for req_id, req_result in result['requirements'].items():
+                                status = req_result['result']
+                                if status == 'COMPLIANT':
+                                    icon, status_text = "✅", "ВЫПОЛНЕНО"
+                                elif status == 'PARTIAL':
+                                    icon, status_text = "⚠️", "ЧАСТИЧНО"
+                                elif status == 'NOT_FOUND':
+                                    icon, status_text = "❌", "НЕ ВЫПОЛНЕНО"
+                                else:
+                                    icon, status_text = "❓", "НЕЯСНО"
+
+                                st.markdown(f"{icon} **{req_id}:** {req_result['description']} — **{status_text}**")
+
+                                facts = req_result.get('facts', {})
+                                if facts:
+                                    found_items = [f"{k}: {v}" for k, v in facts.items() if v is not None]
+                                    if found_items:
+                                        st.caption(f"   📄 Найдено: {', '.join(found_items)}")
+
+                            verdict = result['verdict']
+                            st.divider()
+
+                            if verdict == 'COMPLIANT':
+                                st.success("✅ ВЕРДИКТ: Документ ПОЛНОСТЬЮ соответствует")
+                            elif verdict == 'PARTIAL':
+                                st.warning("⚠️ ВЕРДИКТ: Документ соответствует ЧАСТИЧНО")
+                            elif verdict == 'NOT_FOUND':
+                                st.error("❌ ВЕРДИКТ: Требования НЕ ВЫПОЛНЕНЫ")
+                            else:
+                                st.info("❓ ВЕРДИКТ: НЕ УДАЛОСЬ ОДНОЗНАЧНО ОПРЕДЕЛИТЬ")
                         else:
-                            icon = "❓"
+                            st.warning("⚠️ Verifier не загружен")
 
-                        st.markdown(f"{icon} **{req_id}:** {status}")
+                        temp_path.unlink(missing_ok=True)
 
-                        fragment = req_data.get('fragment')
-                        if fragment:
-                            st.caption(f"   📄 Фрагмент: \"{fragment[:200]}\"")
+                # === AI-АНАЛИЗ СНИЗУ ===
+                current_cache_key = None
+                if selected_q is not None:
+                    current_cache_key = f"{selected_q_id}_{len(document_text)}"
 
-                        # Показываем извлечённые факты
-                        facts = {k: v for k, v in req_data.items()
-                                 if k not in ['fragment', 'status'] and v is not None}
-                        if facts:
-                            st.caption(f"   🔍 Факты: {facts}")
-
-                    # Вердикт AI
-                    ai_verdict = ai_result.get('verdict', 'UNCLEAR')
-                    explanation = ai_result.get('explanation', '')
+                if (
+                    st.session_state.get('ai_result')
+                    and st.session_state.get('ai_cache_key') == current_cache_key
+                ):
+                    ai_result = st.session_state['ai_result']
 
                     st.divider()
-                    if ai_verdict == 'COMPLIANT':
-                        st.success(f"🤖 AI ВЕРДИКТ: COMPLIANT")
-                    elif ai_verdict == 'PARTIAL':
-                        st.warning(f"🤖 AI ВЕРДИКТ: PARTIAL")
-                    elif ai_verdict == 'NOT_FOUND':
-                        st.error(f"🤖 AI ВЕРДИКТ: NOT_FOUND")
+                    st.subheader("🤖 AI-анализ документа")
+
+                    if 'error' in ai_result:
+                        st.error(f"Ошибка AI: {ai_result['error']}")
                     else:
-                        st.info(f"🤖 AI ВЕРДИКТ: UNCLEAR")
+                        st.markdown("**Что AI нашёл в документе:**")
 
-                    if explanation:
-                        st.markdown("**Объяснение AI:**")
-                        st.info(explanation)
+                        facts_data = ai_result.get('document_facts', {})
+                        for req_id, req_data in facts_data.items():
+                            status = req_data.get('status', 'НЕЯСНО')
+                            if status == 'ВЫПОЛНЕНО':
+                                icon = "✅"
+                            elif status == 'ЧАСТИЧНО':
+                                icon = "⚠️"
+                            elif status == 'НЕ ВЫПОЛНЕНО':
+                                icon = "❌"
+                            else:
+                                icon = "❓"
 
-            elif not api_key:
-                st.info("ℹ️ Введите API-ключ в боковой панели, чтобы увидеть AI-анализ")
+                            st.markdown(f"{icon} **{req_id}:** {status}")
+
+                            fragment = req_data.get('fragment')
+                            if fragment:
+                                st.caption(f"   📄 Фрагмент: \"{fragment[:200]}\"")
+
+                            facts = {k: v for k, v in req_data.items()
+                                     if k not in ['fragment', 'status'] and v is not None}
+                            if facts:
+                                st.caption(f"   🔍 Факты: {facts}")
+
+                        ai_verdict = ai_result.get('verdict', 'UNCLEAR')
+                        explanation = ai_result.get('explanation', '')
+
+                        st.divider()
+                        if ai_verdict == 'COMPLIANT':
+                            st.success(f"🤖 AI ВЕРДИКТ: COMPLIANT")
+                        elif ai_verdict == 'PARTIAL':
+                            st.warning(f"🤖 AI ВЕРДИКТ: PARTIAL")
+                        elif ai_verdict == 'NOT_FOUND':
+                            st.error(f"🤖 AI ВЕРДИКТ: NOT_FOUND")
+                        else:
+                            st.info(f"🤖 AI ВЕРДИКТ: UNCLEAR")
+
+                        if explanation:
+                            st.markdown("**Объяснение AI:**")
+                            st.info(explanation)
+
+                elif not api_key:
+                    st.info("ℹ️ Введите API-ключ в боковой панели, чтобы увидеть AI-анализ")
         else:
             st.info("📤 Загрузите текстовый документ для проверки")
 
-    st.divider()
-    st.caption("⚖️ Система проверяет документы по статье 6.1 115-ФЗ.")
+
+# ============================================================
+# ГЛАВНАЯ ТОЧКА ВХОДА
+# ============================================================
+
+def main():
+    st.set_page_config(
+        page_title="Legal QA System",
+        page_icon="⚖️",
+        layout="wide"
+    )
+
+    st.title("⚖️ Legal QA System")
+    st.caption("Проверка документов и сравнение версий закона")
+
+    tab1, tab2 = st.tabs([
+        "📄 Проверка документа",
+        "📊 Сравнение версий",
+    ])
+
+    with tab1:
+        render_block1()
+
+    with tab2:
+        from src.blocks.block2_compare.ui_compare import render as render_block2
+        render_block2()
 
 
 if __name__ == "__main__":
