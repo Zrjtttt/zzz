@@ -5,3 +5,8 @@ sentence-transformers>=2.2.0
 pyyaml>=6.0
 pytest>=7.4.0
 streamlit>=1.28.0
+
+# Для Блока 2 (сравнение версий)
+python-docx>=1.1.0
+beautifulsoup4>=4.12.0
+requests>=2.31.0

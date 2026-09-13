@@ -621,5 +621,28 @@ def main():
         render_block2()
 
 
+def main():
+    st.set_page_config(
+        page_title="Legal QA System",
+        page_icon="⚖️",
+        layout="wide"
+    )
+
+    st.title("⚖️ Legal QA System")
+    st.caption("Проверка документов и сравнение версий закона")
+
+    tab1, tab2 = st.tabs([
+        "📄 Проверка документа",
+        "📊 Сравнение версий",
+    ])
+
+    with tab1:
+        render_block1()
+
+    with tab2:
+        from src.blocks.block2_compare.ui_compare import render as render_block2
+        render_block2()
+
+
 if __name__ == "__main__":
     main()
