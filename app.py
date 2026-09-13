@@ -13,6 +13,23 @@ import sys
 import os
 from pathlib import Path
 
+# Загружаем .env, если он есть (для кастомного AI-провайдера)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
+# Настройки AI-провайдера (OpenAI-совместимый API)
+AI_BASE_URL = os.getenv(
+    "AI_BASE_URL",
+    "https://openrouter.ai/api/v1/chat/completions"
+)
+AI_MODEL = os.getenv(
+    "AI_MODEL",
+    "deepseek/deepseek-chat-v3-0324"
+)
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from src.search.bm25 import BM25Search
@@ -212,7 +229,7 @@ def call_ai_analysis(api_key: str, question: str, expected: str, document_text: 
     }
 
     payload = {
-        "model": "deepseek/deepseek-chat-v3-0324",
+        "model": AI_MODEL,
         "messages": [
             {"role": "system", "content": "Ты — система извлечения фактов. Отвечай только JSON."},
             {"role": "user", "content": prompt}
@@ -223,7 +240,7 @@ def call_ai_analysis(api_key: str, question: str, expected: str, document_text: 
 
     try:
         response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
+            AI_BASE_URL,
             json=payload,
             headers=headers,
             timeout=120
@@ -251,13 +268,13 @@ def check_api_key(api_key: str) -> bool:
         return False
     try:
         response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
+            AI_BASE_URL,
             headers={
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json"
             },
             json={
-                "model": "deepseek/deepseek-chat-v3-0324",
+                "model": AI_MODEL,
                 "messages": [{"role": "user", "content": "test"}],
                 "max_tokens": 5
             },
@@ -293,7 +310,7 @@ def render_block1():
     # ============================================================
 
     with st.sidebar:
-        st.header("🔑 API-ключ OpenRouter")
+        st.header("🔑 API-ключ AI-провайдера")
 
         api_key_input = st.text_input(
             "Введите ключ для AI-анализа:",
@@ -316,6 +333,9 @@ def render_block1():
         else:
             st.info("ℹ️ Без ключа AI-анализ недоступен")
 
+        st.divider()
+        st.caption(f"🌐 API: {AI_BASE_URL.split('/')[2] if '/' in AI_BASE_URL else AI_BASE_URL}")
+        st.caption(f"🤖 Модель: {AI_MODEL}")
         st.divider()
         st.caption("Левая колонка: ответы из закона")
         st.caption("Правая колонка: проверка документа")
@@ -450,7 +470,7 @@ def render_block1():
                             expanded=True
                         ) as status:
                             st.write(f"Вопрос: {selected_q['text']}")
-                            st.write("Отправка в DeepSeek...")
+                            st.write(f"Отправка в {AI_MODEL}...")
 
                             requirements = get_requirements_for_question(
                                 selected_q['norm_id']
@@ -617,31 +637,11 @@ def main():
         render_block1()
 
     with tab2:
-        from src.blocks.block2_compare.ui_compare import render as render_block2
-        render_block2()
-
-
-def main():
-    st.set_page_config(
-        page_title="Legal QA System",
-        page_icon="⚖️",
-        layout="wide"
-    )
-
-    st.title("⚖️ Legal QA System")
-    st.caption("Проверка документов и сравнение версий закона")
-
-    tab1, tab2 = st.tabs([
-        "📄 Проверка документа",
-        "📊 Сравнение версий",
-    ])
-
-    with tab1:
-        render_block1()
-
-    with tab2:
-        from src.blocks.block2_compare.ui_compare import render as render_block2
-        render_block2()
+        try:
+            from src.blocks.block2_compare.ui_compare import render as render_block2
+            render_block2()
+        except Exception as exc:
+            st.error(f"Ошибка в блоке 2: {exc}")
 
 
 if __name__ == "__main__":
