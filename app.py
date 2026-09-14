@@ -136,13 +136,13 @@ def extract_text_from_file(uploaded_file) -> str:
 
     if name.endswith('.pdf'):
         import io
-        from pypdf import PdfReader
-        reader = PdfReader(io.BytesIO(raw))
+        import pdfplumber
         pages = []
-        for page in reader.pages:
-            text = page.extract_text() or ""
-            if text.strip():
-                pages.append(text)
+        with pdfplumber.open(io.BytesIO(raw)) as pdf:
+            for page in pdf.pages:
+                text = page.extract_text() or ""
+                if text.strip():
+                    pages.append(text)
         return "\n".join(pages)
 
     raise ValueError(f"Неподдерживаемый формат файла: {uploaded_file.name}")
@@ -319,19 +319,25 @@ def render_block1():
             help="Ключ нужен для AI-анализа документа."
         )
 
-        if api_key_input:
-            if st.session_state.get('api_key_checked') != api_key_input:
-                with st.spinner("Проверка ключа..."):
-                    is_valid = check_api_key(api_key_input)
-                st.session_state['api_key_valid'] = is_valid
-                st.session_state['api_key_checked'] = api_key_input
+        if st.button(
+            "🔑 Загрузить ключ",
+            disabled=not api_key_input,
+            use_container_width=True,
+            key="load_api_key_button"
+        ):
+            with st.spinner("Проверка ключа..."):
+                is_valid = check_api_key(api_key_input)
+            st.session_state['api_key_valid'] = is_valid
+            st.session_state['api_key_checked'] = api_key_input
 
-            if st.session_state.get('api_key_valid'):
-                st.success("✅ Ключ работает — AI доступен")
-            else:
-                st.error("❌ Ключ не работает")
+        if not api_key_input:
+            st.info("ℹ️ Введите ключ и нажмите «Загрузить ключ»")
+        elif st.session_state.get('api_key_checked') != api_key_input:
+            st.warning("⚠️ Нажмите «Загрузить ключ»")
+        elif st.session_state.get('api_key_valid'):
+            st.success("✅ ИИ готов")
         else:
-            st.info("ℹ️ Без ключа AI-анализ недоступен")
+            st.error("❌ Ключ не работает")
 
         st.divider()
         st.caption(f"🌐 API: {AI_BASE_URL.split('/')[2] if '/' in AI_BASE_URL else AI_BASE_URL}")
