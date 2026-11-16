@@ -17,3 +17,9 @@ dist/
 errors.log
 app.py.backup_block1
 *.backup_*
+
+# Streamlit secrets (никогда не коммитить)
+.streamlit/secrets.toml
+
+# Legacy / сломанные бэкапы
+app_legacy.py

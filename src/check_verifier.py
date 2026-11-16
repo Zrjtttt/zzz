@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 CHECK VERIFIER - Проверка документов на соответствие требованиям
-Версия 3.0 (с исправленной логикой R4, PARTIAL и UNCLEAR)
+Версия 3.1 (добавлены verify_text и get_requirement_descriptions)
 """
 
 import json
@@ -16,7 +14,7 @@ class CheckVerifier:
     """
     Проверяет документ на соответствие требованиям из checks.json
     """
-    
+
     def __init__(self, checks_path: str):
         """
         Args:
@@ -24,39 +22,63 @@ class CheckVerifier:
         """
         with open(checks_path, 'r', encoding='utf-8') as f:
             self.checks_data = json.load(f)
-        
+
         self.check = self.checks_data['check_001']
         self.requirements = self.check['requirements']
-    
+
     def verify(self, document_path: str) -> Dict:
         """
-        Проверяет документ и возвращает результат
-        
+        Проверяет документ по пути (обратная совместимость с main.py).
+
         Args:
             document_path: путь к текстовому документу
-        
+
         Returns:
             Словарь с результатами проверки
         """
-        # Читаем документ
         with open(document_path, 'r', encoding='utf-8') as f:
             document_text = f.read()
-        
+        result = self.verify_text(document_text)
+        result['document'] = document_path
+        return result
+
+    def verify_text(self, document_text: str) -> Dict:
+        """
+        Проверяет уже прочитанный текст документа.
+        Не трогает файловую систему — безопасно для Streamlit.
+
+        Args:
+            document_text: текст документа
+
+        Returns:
+            Словарь с результатами проверки
+        """
         results = {}
-        
-        # Проверяем каждое требование
+
         for req_id, req_data in self.requirements.items():
             results[req_id] = self._check_requirement(req_id, req_data, document_text)
-        
-        # Определяем общий вердикт
+
         verdict = self._determine_verdict(results)
-        
+
         return {
-            'document': document_path,
+            'document': None,
             'requirements': results,
-            'verdict': verdict
+            'verdict': verdict,
         }
-    
+
+    def get_requirement_descriptions(self) -> Dict[str, str]:
+        """
+        Возвращает {req_id: description} из checks.json.
+        Единый источник правды — не хардкодим R1–R4 в UI.
+
+        Returns:
+            Словарь {req_id: описание требования}
+        """
+        return {
+            rid: rd.get('description', rid)
+            for rid, rd in self.requirements.items()
+        }
+
     def _check_requirement(self, req_id: str, req_data: Dict, document_text: str) -> Dict:
         """
         Проверяет одно требование в документе
@@ -65,25 +87,25 @@ class CheckVerifier:
         required_facts = req_data['required_facts']
         evidence_scope = req_data['evidence_scope']
         verification = req_data['verification']
-        
+
         # Извлекаем факты из документа
         facts = self._extract_facts(document_text, required_facts, req_id)
-        
+
         # Проверяем соответствие
         result = self._apply_verification(facts, verification)
-        
+
         return {
             'description': description,
             'facts': facts,
             'result': result
         }
-    
+
     def _extract_facts(self, document_text: str, required_facts: Dict, req_id: str = None) -> Dict:
         """
         Извлекает факты из документа (нормализованные значения)
         """
         facts = {}
-        
+
         for fact_key, fact_value in required_facts.items():
             if fact_key == 'action':
                 # ДЛЯ R4: ищем ТОЛЬКО документирование
@@ -126,7 +148,7 @@ class CheckVerifier:
                         if found:
                             break
                     facts['action'] = found
-            
+
             elif fact_key == 'object':
                 # Маппинг объектов
                 object_map = {
@@ -145,7 +167,7 @@ class CheckVerifier:
                         r'необходим[ая] информаци[яи]',
                     ]
                 }
-                
+
                 found = None
                 for obj_type, patterns in object_map.items():
                     for pattern in patterns:
@@ -154,20 +176,20 @@ class CheckVerifier:
                             break
                     if found:
                         break
-                
+
                 # Если ничего не найдено, проверяем отдельно
                 if not found:
                     if re.search(r'бенефициарн', document_text, re.IGNORECASE):
                         found = 'beneficiary_information'
                     elif re.search(r'информаци', document_text, re.IGNORECASE):
                         found = 'information'
-                
+
                 facts['object'] = found
-            
+
             elif fact_key == 'frequency':
                 # Извлекаем периодичность в месяцах
                 frequency = None
-                
+
                 # Чёткие паттерны
                 if re.search(r'ежегодн[оа]|раз в год|кажд[ы]й год|не реже одного раза в год', document_text, re.IGNORECASE):
                     frequency = 12
@@ -181,9 +203,9 @@ class CheckVerifier:
                     frequency = None  # UNCLEAR
                 else:
                     frequency = None  # NOT_FOUND
-                
+
                 facts['frequency'] = frequency
-            
+
             elif fact_key == 'condition':
                 # Ищем условия
                 if 'on_change' in str(fact_value):
@@ -204,13 +226,13 @@ class CheckVerifier:
                     facts['condition'] = found
                 else:
                     facts['condition'] = None
-            
+
             else:
                 # Для других полей
                 facts[fact_key] = None
-        
+
         return facts
-    
+
     def _apply_verification(self, facts: Dict, verification: Dict) -> str:
         """
         Применяет логику проверки к фактам
@@ -218,42 +240,42 @@ class CheckVerifier:
         # Проверяем COMPLIANT
         if self._matches_condition(facts, verification.get('COMPLIANT', {})):
             return 'COMPLIANT'
-        
+
         # Проверяем PARTIAL
         if self._matches_condition(facts, verification.get('PARTIAL', {})):
             return 'PARTIAL'
-        
+
         # Проверяем NOT_FOUND
         if self._matches_condition(facts, verification.get('NOT_FOUND', {})):
             return 'NOT_FOUND'
-        
+
         # Проверяем UNCLEAR
         if self._matches_condition(facts, verification.get('UNCLEAR', {})):
             return 'UNCLEAR'
-        
+
         return 'NOT_FOUND'
-    
+
     def _matches_condition(self, facts: Dict, condition: Dict) -> bool:
         """
         Проверяет, соответствуют ли факты условию
         """
         if not condition:
             return False
-        
+
         if 'all' in condition:
             # Все условия должны выполняться
             for cond in condition['all']:
                 if not self._check_single_condition(facts, cond):
                     return False
             return True
-        
+
         elif 'any' in condition:
             # Хотя бы одно условие должно выполняться
             for cond in condition['any']:
                 if self._check_single_condition(facts, cond):
                     return True
             return False
-        
+
         elif 'exactly_one' in condition:
             # Ровно одно условие должно выполняться
             count = 0
@@ -261,7 +283,7 @@ class CheckVerifier:
                 if self._check_single_condition(facts, cond):
                     count += 1
             return count == 1
-        
+
         elif 'condition' in condition:
             # Специальные условия
             if condition['condition'] == 'evidence_is_ambiguous':
@@ -271,9 +293,9 @@ class CheckVerifier:
             if condition['condition'] == 'on_change_found_but_action_or_object_incomplete':
                 return False
             return True
-        
+
         return False
-    
+
     def _check_single_condition(self, facts: Dict, cond: Dict) -> bool:
         """
         Проверяет одно условие
@@ -281,91 +303,91 @@ class CheckVerifier:
         field = cond.get('field')
         if not field:
             return False
-        
+
         # Получаем значение из фактов
         value = facts.get(field)
-        
+
         # Проверяем not_found
         if cond.get('not_found'):
             return value is None
-        
+
         # Проверяем equals
         if 'equals' in cond:
             return value == cond['equals']
-        
+
         # Проверяем less_than_or_equal (для частоты)
         if 'less_than_or_equal' in cond:
             if value is None:
                 return False
             return value <= cond['less_than_or_equal']
-        
+
         # Проверяем greater_than (для частоты)
         if 'greater_than' in cond:
             if value is None:
                 return False
             return value > cond['greater_than']
-        
+
         return False
-    
+
     def _determine_verdict(self, results: Dict) -> str:
         """
         Определяет общий вердикт на основе результатов по требованиям
         """
         statuses = [r['result'] for r in results.values()]
-        
+
         all_compliant = all(s == 'COMPLIANT' for s in statuses)
         any_compliant = any(s == 'COMPLIANT' for s in statuses)
         any_partial = any(s == 'PARTIAL' for s in statuses)
         any_not_found = any(s == 'NOT_FOUND' for s in statuses)
         any_unclear = any(s == 'UNCLEAR' for s in statuses)
-        
+
         if all_compliant:
             return 'COMPLIANT'
-        
+
         if any_unclear:
             return 'UNCLEAR'
-        
+
         if any_partial:
             return 'PARTIAL'
-        
+
         # Если есть хоть одно COMPLIANT, а остальные NOT_FOUND → PARTIAL
         if any_compliant and any_not_found:
             return 'PARTIAL'
-        
+
         if any_not_found:
             return 'NOT_FOUND'
-        
+
         return 'NOT_FOUND'
 
 
 def main():
     """Тестирование на 4 документах"""
     verifier = CheckVerifier('data/115-fz/processed/checks.json')
-    
+
     documents = [
         ('data/test_documents/document_A_compliant.txt', 'COMPLIANT'),
         ('data/test_documents/document_B_partial.txt', 'PARTIAL'),
         ('data/test_documents/document_C_not_found.txt', 'NOT_FOUND'),
         ('data/test_documents/document_D_unclear.txt', 'PARTIAL'),
     ]
-    
+
     print("\n" + "="*60)
     print("ПРОВЕРКА ДОКУМЕНТОВ")
     print("="*60)
-    
+
     for doc_path, expected in documents:
         print(f"\n📄 {doc_path}")
         print(f"   Ожидается: {expected}")
-        
+
         result = verifier.verify(doc_path)
-        
+
         print(f"\n   📋 РЕЗУЛЬТАТЫ ПО ТРЕБОВАНИЯМ:")
         for req_id, req_result in result['requirements'].items():
             status = req_result['result']
             emoji = '✅' if status == 'COMPLIANT' else '⚠️' if status == 'PARTIAL' else '❌' if status == 'NOT_FOUND' else '❓'
             print(f"      {emoji} {req_id}: {status}")
             print(f"         Факты: {req_result['facts']}")
-        
+
         print(f"\n   📊 ВЕРДИКТ: {result['verdict']}")
         print(f"   {'✅' if result['verdict'] == expected else '❌'} Ожидалось: {expected}")
 
