@@ -4,7 +4,11 @@ LEGAL QA SYSTEM - Интерфейс с двумя табами
 Таб 1: проверка документа (чек-лист + AI-анализ)
 Таб 2: сравнение версий закона
 
-Версия: 2.0
+Версия: 2.1
+Изменения:
+  - Модель по умолчанию: nvidia/nemotron-3.5-super-vl:free (DeepSeek убран)
+  - AI_MAX_TOKENS увеличен до 8000 (reasoning-модель)
+  - Защита от content=null в call_ai_analysis
 """
 
 import hashlib
@@ -36,10 +40,10 @@ AI_BASE_URL = os.getenv(
 )
 AI_MODEL = os.getenv(
     "AI_MODEL",
-    "deepseek/deepseek-chat-v3-0324"
+    "nvidia/nemotron-3.5-super-vl:free"
 )
 AI_TIMEOUT = int(os.getenv("AI_TIMEOUT", "60"))
-AI_MAX_TOKENS = int(os.getenv("AI_MAX_TOKENS", "4000"))
+AI_MAX_TOKENS = int(os.getenv("AI_MAX_TOKENS", "8000"))
 MAX_DOC_CHARS = int(os.getenv("MAX_DOC_CHARS", "15000"))
 
 logging.basicConfig(
@@ -338,7 +342,24 @@ def call_ai_analysis(api_key: str, question: str, expected: str,
             logger.error("AI API %s: %s", response.status_code, response.text[:300])
             return {"error": f"Ошибка API: {response.status_code}"}
 
-        content = response.json()["choices"][0]["message"]["content"]
+        # Защита от reasoning-моделей: content может быть null,
+        # если модель израсходовала весь бюджет на reasoning.
+        msg = response.json()["choices"][0]["message"]
+        content = msg.get("content") or ""
+        if not content:
+            reasoning = msg.get("reasoning") or "(нет)"
+            finish = response.json()["choices"][0].get("finish_reason", "?")
+            logger.error(
+                "AI вернул пустой content (finish_reason=%s). Reasoning: %s",
+                finish, reasoning[:300],
+            )
+            return {
+                "error": (
+                    f"Модель не выдала ответ (finish_reason={finish}, "
+                    "только reasoning). Увеличьте AI_MAX_TOKENS."
+                )
+            }
+
         match = re.search(r'\{.*\}', content, re.DOTALL)
         if not match:
             logger.error("AI вернул не-JSON: %s", content[:200])
